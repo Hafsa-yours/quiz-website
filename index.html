@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>8th Grade Quiz</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f0f8ff; }
+        h1 { color: #333; }
+        .quiz-container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px #aaa; }
+        .question { font-weight: bold; margin-top: 20px; }
+        .options { margin-top: 10px; }
+        button { margin-top: 20px; padding: 10px 20px; }
+        #timer { font-weight: bold; margin-bottom: 20px; color: #d9534f; }
+        #leaderboard { margin-top: 30px; background: #e7f3fe; padding: 15px; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>8th Grade Science Quiz</h1>
+        <div id="timer">Time Left: <span id="time">60</span>s</div>
+        <div id="quiz">
+            <div class="question" id="question">Loading question...</div>
+            <div class="options" id="options"></div>
+            <button onclick="submitAnswer()">Submit</button>
+        </div>
+        <div id="result"></div>
+        <div id="leaderboard">
+            <h3>Leaderboard (Local)</h3>
+            <ol id="scoreboard"></ol>
+        </div>
+    </div>
+
+    <script>
+        const quiz = [
+            {
+                q: "What is the chemical symbol for water?",
+                options: ["O2", "H2O", "CO2", "NaCl"],
+                answer: "H2O"
+            },
+            {
+                q: "Which planet is known as the Red Planet?",
+                options: ["Earth", "Jupiter", "Mars", "Venus"],
+                answer: "Mars"
+            },
+            {
+                q: "What force pulls objects toward Earth?",
+                options: ["Magnetism", "Electricity", "Gravity", "Friction"],
+                answer: "Gravity"
+            },
+            {
+                q: "Which organ pumps blood through the body?",
+                options: ["Lungs", "Brain", "Heart", "Liver"],
+                answer: "Heart"
+            },
+            {
+                q: "What is the boiling point of water?",
+                options: ["50°C", "100°C", "25°C", "0°C"],
+                answer: "100°C"
+            }
+        ];
+
+        let current = 0, score = 0, timeLeft = 60;
+        const timer = document.getElementById("time");
+        const question = document.getElementById("question");
+        const options = document.getElementById("options");
+        const result = document.getElementById("result");
+        const scoreboard = document.getElementById("scoreboard");
+
+        function loadQuestion() {
+            if (current >= quiz.length) {
+                result.innerHTML = `<h2>You scored ${score}/${quiz.length}</h2>`;
+                updateLeaderboard(score);
+                return;
+            }
+
+            question.innerText = quiz[current].q;
+            options.innerHTML = "";
+            quiz[current].options.forEach(opt => {
+                options.innerHTML += `<div><label><input type="radio" name="option" value="${opt}"> ${opt}</label></div>`;
+            });
+        }
+
+        function submitAnswer() {
+            const selected = document.querySelector("input[name='option']:checked");
+            if (!selected) {
+                alert("Please select an answer.");
+                return;
+            }
+            if (selected.value === quiz[current].answer) score++;
+            current++;
+            loadQuestion();
+        }
+
+        function startTimer() {
+            const interval = setInterval(() => {
+                timeLeft--;
+                timer.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    question.innerText = "Time's up!";
+                    options.innerHTML = "";
+                    result.innerHTML = `<h2>You scored ${score}/${quiz.length}</h2>`;
+                    updateLeaderboard(score);
+                }
+            }, 1000);
+        }
+
+        function updateLeaderboard(score) {
+            const name = prompt("Enter your name for the leaderboard:");
+            if (!name) return;
+            const leaderboard = JSON.parse(localStorage.getItem("leaderboard") || "[]");
+            leaderboard.push({ name, score });
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard.splice(5); // keep top 5
+            localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+
+            scoreboard.innerHTML = leaderboard.map(p => `<li>${p.name}: ${p.score}</li>`).join("");
+        }
+
+        loadQuestion();
+        startTimer();
+    </script>
+</body>
+</html>
